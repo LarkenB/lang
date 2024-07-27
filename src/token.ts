@@ -55,6 +55,11 @@ export type ArrowToken = {
   type: "arrow";
 };
 
+export type CommaToken = {
+  lexeme: ",";
+  type: "comma";
+};
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -67,7 +72,8 @@ export type Token =
   | SemiToken
   | IntLitToken
   | PlusToken
-  | ArrowToken;
+  | ArrowToken
+  | CommaToken;
 
 export type TokenType = ExtractTypes<Token>;
 

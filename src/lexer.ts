@@ -32,6 +32,8 @@ export class Lexer implements ILexer {
         return { type: "rBrace", lexeme: c };
       case ";":
         return { type: "semi", lexeme: c };
+      case ",":
+        return { type: "comma", lexeme: c };
     }
 
     // Operators
