@@ -60,6 +60,11 @@ export type CommaToken = {
   type: "comma";
 };
 
+export type ColonToken = {
+  lexeme: ":";
+  type: "colon";
+};
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -73,7 +78,8 @@ export type Token =
   | IntLitToken
   | PlusToken
   | ArrowToken
-  | CommaToken;
+  | CommaToken
+  | ColonToken;
 
 export type TokenType = ExtractTypes<Token>;
 
