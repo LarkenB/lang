@@ -3,7 +3,7 @@ import { ILexer, IReader, eof } from "./interfaces";
 import { Token } from "./token";
 
 export class Lexer implements ILexer {
-  private _reader: IReader;
+  private readonly _reader: IReader;
 
   constructor(reader: IReader) {
     this._reader = reader;
@@ -45,10 +45,25 @@ export class Lexer implements ILexer {
 
       // TODO: reduce verbosity needed for adding keywords;
       switch (lexeme) {
-        case 'func': return {type: 'func'};
-        case 'ret': return {type: 'ret'};
-        default: return {type: 'ident', lexeme};
+        case "func":
+          return { type: "func" };
+        case "ret":
+          return { type: "ret" };
+        default:
+          return { type: "ident", lexeme };
       }
+    }
+
+    // Int Literals
+    if (isDigit(c)) {
+      let lexeme = c;
+      c = this._reader.peek();
+      while (c !== eof && isDigit(c)) {
+        lexeme += this._reader.next();
+        c = this._reader.peek();
+      }
+
+      return { type: "intLit", lexeme };
     }
 
     throw new Error(`Error: unknown char: '${c}'`);
@@ -67,6 +82,11 @@ function startsIdent(c: string) {
 function isIdent(c: string) {
   assert(c.length === 1);
   return /([A-Z]|[0-9]|_)/i.test(c);
+}
+
+function isDigit(c: string) {
+  assert(c.length === 1);
+  return /([0-9])/i.test(c);
 }
 
 function isWhitespace(c: string) {

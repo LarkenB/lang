@@ -1,5 +1,3 @@
-export type TokenType = "eof" | "ident" | "func" | "(" | ")" | "->";
-
 export type EOFToken = {
   type: "eof";
 };
@@ -18,29 +16,47 @@ export type IdentToken = {
 };
 
 export type LParenToken = {
-    lexeme: '(';
-    type: "lParen";
+  lexeme: "(";
+  type: "lParen";
 };
 
 export type RParenToken = {
-    lexeme: ')';
-    type: "rParen";
+  lexeme: ")";
+  type: "rParen";
 };
 
-
 export type LBraceToken = {
-    lexeme: '{';
-    type: "lBrace";
+  lexeme: "{";
+  type: "lBrace";
 };
 
 export type RBraceToken = {
-    lexeme: '}';
-    type: "rBrace";
+  lexeme: "}";
+  type: "rBrace";
 };
 
 export type SemiToken = {
-    lexeme: ';';
-    type: "semi";
+  lexeme: ";";
+  type: "semi";
 };
 
-export type Token = EOFToken | IdentToken | FuncToken | RetToken | LParenToken | RParenToken | RBraceToken | LBraceToken | SemiToken;
+export type IntLitToken = {
+  lexeme: string;
+  type: "intLit";
+};
+
+export type Token =
+  | EOFToken
+  | IdentToken
+  | FuncToken
+  | RetToken
+  | LParenToken
+  | RParenToken
+  | RBraceToken
+  | LBraceToken
+  | SemiToken
+  | IntLitToken;
+
+export type TokenType = ExtractTypes<Token>;
+
+type ExtractTypes<T> = T extends { type: infer U } ? U : never;
