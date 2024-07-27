@@ -34,6 +34,25 @@ export class Lexer implements ILexer {
         return { type: "semi", lexeme: c };
     }
 
+    // Operators
+    if (isOperator(c)) {
+      let lexeme = c;
+      c = this._reader.peek();
+      while (c !== eof && isOperator(c)) {
+        lexeme += this._reader.next();
+        c = this._reader.peek();
+      }
+
+      switch (lexeme) {
+        case "+":
+          return { type: "plus", lexeme };
+        case "->":
+          return { type: "arrow", lexeme };
+        default:
+          throw new Error(`Unknown operator ${lexeme}`);
+      }
+    }
+
     // Keywords & Identifiers
     if (startsIdent(c)) {
       let lexeme = c;
@@ -87,6 +106,12 @@ function isIdent(c: string) {
 function isDigit(c: string) {
   assert(c.length === 1);
   return /([0-9])/i.test(c);
+}
+
+function isOperator(c: string) {
+  assert(c.length === 1);
+  const operatorChars = ["+", "-", ">"];
+  return operatorChars.includes(c);
 }
 
 function isWhitespace(c: string) {

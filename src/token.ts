@@ -45,6 +45,16 @@ export type IntLitToken = {
   type: "intLit";
 };
 
+export type PlusToken = {
+  lexeme: "+";
+  type: "plus";
+};
+
+export type ArrowToken = {
+  lexeme: "->";
+  type: "arrow";
+};
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -55,7 +65,9 @@ export type Token =
   | RBraceToken
   | LBraceToken
   | SemiToken
-  | IntLitToken;
+  | IntLitToken
+  | PlusToken
+  | ArrowToken;
 
 export type TokenType = ExtractTypes<Token>;
 
