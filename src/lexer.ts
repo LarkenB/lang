@@ -4,12 +4,31 @@ import { Token } from "./token";
 
 export class Lexer implements ILexer {
   private readonly _reader: IReader;
+  private _peeked: Token | null = null;
 
   constructor(reader: IReader) {
     this._reader = reader;
   }
 
   next(): Token {
+    if (this._peeked) {
+      const result = this._peeked;
+      this._peeked = null;
+      return result;
+    }
+
+    return this._internalNext();
+  }
+
+  peek(): Token {
+    if (!this._peeked) {
+      this._peeked = this._internalNext();
+    }
+    
+    return this._peeked;
+  }
+
+  _internalNext(): Token {
     let c = this._reader.next();
 
     // Whitespace
@@ -90,10 +109,6 @@ export class Lexer implements ILexer {
     }
 
     throw new Error(`Error: unknown char: '${c}'`);
-  }
-
-  peek(): Token {
-    throw new Error("Method not implemented.");
   }
 }
 
