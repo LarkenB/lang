@@ -1,7 +1,8 @@
-import { readFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { Lexer } from "./lexer";
 import { Reader } from "./reader";
 import { Parser } from "./parser";
+import { Emitter } from "./emitter";
 
 const main = () => {
   const content = readFileSync("./examples/simple.lang", { encoding: "utf-8" });
@@ -10,8 +11,12 @@ const main = () => {
   const lexer = new Lexer(reader);
   const parser = new Parser(lexer);
   const ast = parser.parseProgram();
-  
+  const emitter = new Emitter();
+  const binary = emitter.emitProgram(ast);
+
   console.log(JSON.stringify(ast, null, 2));
+  
+  writeFileSync('./out.wasm', binary, {encoding: 'utf-8'});
 
   /* let token = lexer.next();
   while (token.type !== 'eof') {
