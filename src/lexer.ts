@@ -24,7 +24,7 @@ export class Lexer implements ILexer {
     if (!this._peeked) {
       this._peeked = this._internalNext();
     }
-    
+
     return this._peeked;
   }
 
@@ -37,7 +37,7 @@ export class Lexer implements ILexer {
     }
 
     // EOF
-    if (c === eof) return { type: "eof" };
+    if (c === eof) return { type: "eof", lexeme: "" };
 
     // Special Chars
     switch (c) {
@@ -68,7 +68,15 @@ export class Lexer implements ILexer {
 
       switch (lexeme) {
         case "+":
-          return { type: "plus", lexeme };
+          return { type: "op", lexeme };
+        case "-":
+          return { type: "op", lexeme };
+        case "*":
+          return { type: "op", lexeme };
+        case "/":
+          return { type: "op", lexeme };
+        case "%":
+          return { type: "op", lexeme };
         case "->":
           return { type: "arrow", lexeme };
         default:
@@ -76,7 +84,7 @@ export class Lexer implements ILexer {
       }
     }
 
-    // Keywords & Identifiers
+    // Keywords and Identifiers
     if (startsIdent(c)) {
       let lexeme = c;
       c = this._reader.peek();
@@ -88,9 +96,9 @@ export class Lexer implements ILexer {
       // TODO: reduce verbosity needed for adding keywords;
       switch (lexeme) {
         case "func":
-          return { type: "func" };
+          return { type: "func", lexeme };
         case "ret":
-          return { type: "ret" };
+          return { type: "ret", lexeme };
         default:
           return { type: "ident", lexeme };
       }
@@ -129,7 +137,7 @@ function isDigit(c: string) {
 
 function isOperator(c: string) {
   assert(c.length === 1);
-  const operatorChars = ["+", "-", ">"];
+  const operatorChars = ["+", "-", "*", "/", "%", ">"];
   return operatorChars.includes(c);
 }
 

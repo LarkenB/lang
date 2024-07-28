@@ -1,13 +1,16 @@
 export type EOFToken = {
   type: "eof";
+  lexeme: "";
 };
 
 export type FuncToken = {
   type: "func";
+  lexeme: "func";
 };
 
 export type RetToken = {
   type: "ret";
+  lexeme: "ret";
 };
 
 export type IdentToken = {
@@ -45,9 +48,9 @@ export type IntLitToken = {
   type: "intLit";
 };
 
-export type PlusToken = {
-  lexeme: "+";
-  type: "plus";
+export type OpToken = {
+  lexeme: "+" | "-" | "*" | "/" | "%";
+  type: "op";
 };
 
 export type ArrowToken = {
@@ -76,7 +79,7 @@ export type Token =
   | LBraceToken
   | SemiToken
   | IntLitToken
-  | PlusToken
+  | OpToken
   | ArrowToken
   | CommaToken
   | ColonToken;

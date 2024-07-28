@@ -1,4 +1,4 @@
-import { IdentToken } from "./token";
+import { IdentToken, IntLitToken, OpToken } from "./token";
 
 export type Program = {
   funcDecls: FuncDecl[];
@@ -18,10 +18,34 @@ export type Param = {
 
 export type Type = IdentToken;
 
-export type Stmt = RetStmt;
+export type Stmt = RetStmt | ExprStmt;
 
 export type RetStmt = {
   expr: Expr;
 };
 
-export type Expr = {};
+export type ExprStmt = {
+  expr: Expr;
+};
+
+
+export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr;
+
+export type CallExpr = {
+  name: IdentToken;
+  args: Expr[];
+}
+
+export type VarExpr = {
+  name: IdentToken;
+}
+
+export type BinaryExpr = {
+  lhs: Expr;
+  op: OpToken;
+  rhs: Expr;
+}
+
+export type IntExpr = {
+  value: IntLitToken;
+}

@@ -9,7 +9,9 @@ const main = () => {
   const reader = new Reader(content);
   const lexer = new Lexer(reader);
   const parser = new Parser(lexer);
-  parser.parseProgram();
+  const ast = parser.parseProgram();
+  
+  console.log(JSON.stringify(ast, null, 2));
 
   /* let token = lexer.next();
   while (token.type !== 'eof') {

@@ -1,5 +1,7 @@
 func main() -> i32 {
+    ret add(69, 420);
 }
 
 func add(a: i32, b: i32) -> i32 {
+    ret a + b * 20;
 }
