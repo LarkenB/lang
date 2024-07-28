@@ -4,7 +4,7 @@ pkgs.mkShell {
   buildInputs = with pkgs; [
     nodejs
     git
-    binaryen
+    wabt
     nixpkgs-fmt
     (vscode-with-extensions.override {
       vscode = pkgs.vscode;
