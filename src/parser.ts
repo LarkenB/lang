@@ -34,6 +34,7 @@ export class Parser {
     }
 
     return {
+      type: 'program',
       funcDecls,
     };
   }
@@ -42,7 +43,7 @@ export class Parser {
     this._expect("func");
     const name = this._expect("ident");
     const params = this._parseParams();
-    let retType: Type = { type: "ident", lexeme: "void" };
+    let retType: Type = { type: 'type', name: { type: "ident", lexeme: "void" }};
     if (this._lexer.peek().type === "arrow") {
       this._lexer.next(); // Eat '->'
       retType = this._parseType();
@@ -50,6 +51,7 @@ export class Parser {
     const body = this._parseStmtBlock();
 
     return {
+      type: 'funcDecl',
       name,
       params,
       retType,
@@ -67,15 +69,15 @@ export class Parser {
 
     const name = this._expect("ident");
     this._expect("colon");
-    const type = this._parseType();
-    params.push({ name, type });
+    const paramType = this._parseType();
+    params.push({ type: 'param',  name, paramType });
 
     while (this._lexer.peek().type === "comma") {
       this._lexer.next(); // Eat ','
       const name = this._expect("ident");
       this._expect("colon");
       const type = this._parseType();
-      params.push({ name, type });
+      params.push({ type: 'param', name, paramType });
     }
 
     this._expect("rParen");
@@ -83,7 +85,7 @@ export class Parser {
   }
 
   private _parseType(): Type {
-    return this._expect("ident");
+    return {type: 'type', name: this._expect("ident")};
   }
 
   private _parseStmtBlock(): Stmt[] {
@@ -109,13 +111,13 @@ export class Parser {
     this._expect("ret");
     const expr = this._parseExpr();
     this._expect("semi");
-    return { expr };
+    return { type: 'retStmt', expr };
   }
 
   private _parseExprStmt(): ExprStmt {
     const expr = this._parseExpr();
     this._expect("semi");
-    return { expr };
+    return { type: 'exprStmt', expr };
   }
 
   private _parseExpr(): Expr {
@@ -144,7 +146,7 @@ export class Parser {
         const args: Expr[] = [];
         if (this._lexer.peek().type === "rParen") {
           this._lexer.next(); // Eat ')'
-          return { name, args };
+          return { type: 'callExpr', name, args };
         }
 
         args.push(this._parseExpr());
@@ -155,16 +157,16 @@ export class Parser {
         }
 
         this._expect("rParen");
-        return { name, args };
+        return { type: 'callExpr', name, args };
       }
       default:
-        return { name };
+        return { type: 'varExpr', name };
     }
   }
 
   private _parseIntLitExpr(): IntExpr {
     const value = this._expect('intLit');
-    return { value };
+    return { type: 'intExpr', value };
   }
 
   private _parseParenExpr(): Expr {
@@ -189,7 +191,7 @@ export class Parser {
         rhs = this._parseBinaryExpr({expr: rhs, precedence: precedence + 1});
       }
 
-      lhs.expr = { lhs: lhs.expr, op, rhs };
+      lhs.expr = { type: 'binaryExpr', lhs: lhs.expr, op, rhs };
     }
   }
 
