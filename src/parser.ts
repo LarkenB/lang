@@ -19,7 +19,6 @@ export class Parser {
     ["-", 20],
     ["*", 40],
     ["/", 40],
-    ["%", 40],
   ]);
 
   constructor(lexer: ILexer) {
@@ -34,7 +33,7 @@ export class Parser {
     }
 
     return {
-      type: 'program',
+      type: "program",
       funcDecls,
     };
   }
@@ -43,7 +42,10 @@ export class Parser {
     this._expect("func");
     const name = this._expect("ident");
     const params = this._parseParams();
-    let retType: Type = { type: 'type', name: { type: "ident", lexeme: "void" }};
+    let retType: Type = {
+      type: "type",
+      name: { type: "ident", lexeme: "void" },
+    };
     if (this._lexer.peek().type === "arrow") {
       this._lexer.next(); // Eat '->'
       retType = this._parseType();
@@ -51,7 +53,7 @@ export class Parser {
     const body = this._parseStmtBlock();
 
     return {
-      type: 'funcDecl',
+      type: "funcDecl",
       name,
       params,
       retType,
@@ -70,14 +72,14 @@ export class Parser {
     const name = this._expect("ident");
     this._expect("colon");
     const paramType = this._parseType();
-    params.push({ type: 'param',  name, paramType });
+    params.push({ type: "param", name, paramType });
 
     while (this._lexer.peek().type === "comma") {
       this._lexer.next(); // Eat ','
       const name = this._expect("ident");
       this._expect("colon");
       const type = this._parseType();
-      params.push({ type: 'param', name, paramType });
+      params.push({ type: "param", name, paramType });
     }
 
     this._expect("rParen");
@@ -85,7 +87,7 @@ export class Parser {
   }
 
   private _parseType(): Type {
-    return {type: 'type', name: this._expect("ident")};
+    return { type: "type", name: this._expect("ident") };
   }
 
   private _parseStmtBlock(): Stmt[] {
@@ -111,13 +113,13 @@ export class Parser {
     this._expect("ret");
     const expr = this._parseExpr();
     this._expect("semi");
-    return { type: 'retStmt', expr };
+    return { type: "retStmt", expr };
   }
 
   private _parseExprStmt(): ExprStmt {
     const expr = this._parseExpr();
     this._expect("semi");
-    return { type: 'exprStmt', expr };
+    return { type: "exprStmt", expr };
   }
 
   private _parseExpr(): Expr {
@@ -146,7 +148,7 @@ export class Parser {
         const args: Expr[] = [];
         if (this._lexer.peek().type === "rParen") {
           this._lexer.next(); // Eat ')'
-          return { type: 'callExpr', name, args };
+          return { type: "callExpr", name, args };
         }
 
         args.push(this._parseExpr());
@@ -157,16 +159,16 @@ export class Parser {
         }
 
         this._expect("rParen");
-        return { type: 'callExpr', name, args };
+        return { type: "callExpr", name, args };
       }
       default:
-        return { type: 'varExpr', name };
+        return { type: "varExpr", name };
     }
   }
 
   private _parseIntLitExpr(): IntExpr {
-    const value = this._expect('intLit');
-    return { type: 'intExpr', value };
+    const value = this._expect("intLit");
+    return { type: "intExpr", value };
   }
 
   private _parseParenExpr(): Expr {
@@ -179,19 +181,20 @@ export class Parser {
   private _parseBinaryExpr(lhs: { expr: Expr; precedence: number }): Expr {
     while (true) {
       const precedence = this._precedences.get(this._lexer.peek().lexeme) ?? -1;
-      if (precedence < lhs.precedence) { 
+      if (precedence < lhs.precedence) {
         return lhs.expr;
       }
 
       const op = this._expect("op");
       let rhs = this._parsePrimaryExpr();
 
-      const nextPrecedence = this._precedences.get(this._lexer.peek().lexeme) ?? -1;
+      const nextPrecedence =
+        this._precedences.get(this._lexer.peek().lexeme) ?? -1;
       if (precedence < nextPrecedence) {
-        rhs = this._parseBinaryExpr({expr: rhs, precedence: precedence + 1});
+        rhs = this._parseBinaryExpr({ expr: rhs, precedence: precedence + 1 });
       }
 
-      lhs.expr = { type: 'binaryExpr', lhs: lhs.expr, op, rhs };
+      lhs.expr = { type: "binaryExpr", lhs: lhs.expr, op, rhs };
     }
   }
 

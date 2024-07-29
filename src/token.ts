@@ -49,7 +49,7 @@ export type IntLitToken = {
 };
 
 export type OpToken = {
-  lexeme: "+" | "-" | "*" | "/" | "%";
+  lexeme: "+" | "-" | "*" | "/";
   type: "op";
 };
 

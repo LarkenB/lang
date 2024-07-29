@@ -75,8 +75,6 @@ export class Lexer implements ILexer {
           return { type: "op", lexeme };
         case "/":
           return { type: "op", lexeme };
-        case "%":
-          return { type: "op", lexeme };
         case "->":
           return { type: "arrow", lexeme };
         default:
@@ -137,7 +135,7 @@ function isDigit(c: string) {
 
 function isOperator(c: string) {
   assert(c.length === 1);
-  const operatorChars = ["+", "-", "*", "/", "%", ">"];
+  const operatorChars = ["+", "-", "*", "/", ">"];
   return operatorChars.includes(c);
 }
 
