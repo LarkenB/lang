@@ -111,14 +111,19 @@ export class Parser {
 
   private _parseRetStmt(): RetStmt {
     this._expect("ret");
-    const expr = this._parseExpr();
+    let expr = null;
+    if (this._lexer.peek().type !== 'semi') {
+      expr = this._parseExpr();
+    }
     this._expect("semi");
     return { type: "retStmt", expr };
   }
 
   private _parseExprStmt(): ExprStmt {
     const expr = this._parseExpr();
+    console.log(expr);
     this._expect("semi");
+    console.log('peek: ', this._lexer.peek());
     return { type: "exprStmt", expr };
   }
 
@@ -136,7 +141,7 @@ export class Parser {
       case "lParen":
         return this._parseParenExpr();
       default:
-        throw new Error("TODO" + this._lexer.peek().type);
+        throw new Error("TODO: " + this._lexer.peek().type);
     }
   }
 

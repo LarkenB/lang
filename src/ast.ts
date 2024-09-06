@@ -28,7 +28,7 @@ export type Stmt = RetStmt | ExprStmt;
 
 export type RetStmt = {
   type: "retStmt";
-  expr: Expr;
+  expr: Expr | null;
 };
 
 export type ExprStmt = {

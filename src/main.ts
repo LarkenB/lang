@@ -7,7 +7,7 @@ import { TypeChecker } from "./checker";
 
 const main = async () => {
   try {
-    const content = readFileSync("./examples/simple.lang", {
+    const content = readFileSync("./examples/checker.lang", {
       encoding: "utf-8",
     });
     // console.log(content);

@@ -112,7 +112,7 @@ export class Emitter {
   private _emitStmt(stmt: Stmt): number[] {
     switch (stmt.type) {
       case "retStmt":
-        return [...this._emitExpr(stmt.expr), Opcodes.end];
+        return stmt.expr ? [...this._emitExpr(stmt.expr), Opcodes.end] : [Opcodes.end];
       case "exprStmt":
         return this._emitExpr(stmt.expr);
       default:

@@ -125,16 +125,7 @@ export class TypeChecker {
     );
 
     // Check function body
-    funcDecl.body.forEach((stmt) => {
-      if (stmt.type === "retStmt") {
-        const exprType = this._checkExpr(stmt.expr);
-        const retType = this._checkType(funcDecl.retType);
-        assert(
-          `exprType === retType, "Error: cannot return value of type: ${exprType} in function with return type: ${retType}`
-        );
-      }
-      this._checkStmt(stmt);
-    });
+    funcDecl.body.forEach((stmt) => this._checkStmt(stmt));
     this._symbolTable.popFrame();
   }
 
@@ -144,6 +135,13 @@ export class TypeChecker {
         const funcName = this._symbolTable.getCurrentFrameName();
         // It is fine to enforce this exists because you will never check a return statement outside a frame, the parser gurantees this
         const funcType = this._symbolTable.getFunction(funcName)!;
+
+        // Check for void return type
+        if (stmt.expr === null) {
+          if (funcType.retType === 'void') return 'void';
+          throw new Error(`No return value was provided for function: ${funcName} with return type: ${funcType.retType}`);
+        }
+
         const exprType = this._checkExpr(stmt.expr);
         if (exprType !== funcType.retType) {
           throw new Error(`Return statement in function: ${funcName} has incorrect type, expected: ${funcType.retType}, got: ${exprType}`);

@@ -1,0 +1,11 @@
+func main() -> i32 {
+    ret add(64, sub(66, 60));
+}
+
+func add(a: i32, b: i32) -> i32 {
+    ret a + b;
+}
+
+func sub(a: i32, b: i32) -> i32 {
+    ret a - b;
+}
