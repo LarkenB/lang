@@ -5,3 +5,7 @@ func main() -> i32 {
 func add(a: i32, b: i32) -> i32 {
     ret a + b * 20 / 40 - 60;
 }
+
+func bar(c: i32) -> i32 {
+    ret c;
+}
