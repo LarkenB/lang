@@ -34,3 +34,12 @@ test("lexer simple main function example", () => {
 
   expect(result).toEqual(expected);
 });
+
+test("lexer should return eof for empty source file", () => {
+  const source = ``;
+
+  const reader = new Reader(source);
+  const lexer = new Lexer(reader);
+
+  expect(lexer.next().type).toEqual('eof');
+});
