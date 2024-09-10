@@ -36,7 +36,7 @@ export type ExprStmt = {
   expr: Expr;
 };
 
-export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr;
+export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr | AssignExpr;
 
 export type CallExpr = {
   type: "callExpr";
@@ -48,6 +48,12 @@ export type VarExpr = {
   type: "varExpr";
   name: IdentToken;
 };
+
+export type AssignExpr = {
+  type: "assignExpr";
+  name: IdentToken;
+  expr: Expr;  
+}
 
 export type BinaryExpr = {
   type: "binaryExpr";

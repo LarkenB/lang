@@ -36,10 +36,18 @@ export class Emitter {
 
   private _buildSymbolTable(funcDecls: FuncDecl[]) {
     for (const func of funcDecls) {
+      let index = 0;
       this._symbolTable[func.name.lexeme] = {};
-      func.params.forEach((param, index) => {
+      func.params.forEach((param) => {
         this._symbolTable[func.name.lexeme][param.name.lexeme] = index;
+        index++;
       });
+      func.body.map(stmt => stmt.expr).forEach(expr => {
+        if (expr?.type === 'assignExpr') {
+          this._symbolTable[func.name.lexeme][expr.name.lexeme] = index;
+          index++;
+        }
+      })
     }
   }
 
@@ -127,9 +135,10 @@ export class Emitter {
           Opcodes.i32_const,
           ...signedLEB128(parseInt(expr.value.lexeme)),
         ];
-      case "varExpr":
-        const paramIndex = this._getParamIndex(expr.name.lexeme);
-        return [Opcodes.get_local, ...unsignedLEB128(paramIndex)];
+      case "varExpr": {
+        const localIndex = this._getLocalIndex(expr.name.lexeme);
+        return [Opcodes.get_local, ...unsignedLEB128(localIndex)];
+      }
       case "callExpr":
         const args = flatten(expr.args.map((arg) => this._emitExpr(arg)));
         return [
@@ -143,22 +152,25 @@ export class Emitter {
           ...this._emitExpr(expr.rhs),
           binaryOpcode[expr.op.lexeme],
         ];
-      default:
-        throw new Error(`Unknown expression type: ${(expr as any).type}`);
+      case "assignExpr": {
+        const localIndex = this._getLocalIndex(expr.name.lexeme);
+        const value = this._emitExpr(expr.expr);
+        return [...value, Opcodes.set_local, ...unsignedLEB128(localIndex)];
+      }
     }
   }
 
-  private _getParamIndex(paramName: string): number {
+  private _getLocalIndex(localName: string): number {
     if (!this._currentFunction) {
       throw new Error("Not currently in a function context");
     }
-    const paramIndex = this._symbolTable[this._currentFunction][paramName];
-    if (paramIndex === undefined) {
+    const localIndex = this._symbolTable[this._currentFunction][localName];
+    if (localIndex === undefined) {
       throw new Error(
-        `Unknown parameter: ${paramName} in function ${this._currentFunction}`
+        `Unknown local: ${localName} in function ${this._currentFunction}`
       );
     }
-    return paramIndex;
+    return localIndex;
   }
 
   private _getFunctionIndex(funcName: string): number {

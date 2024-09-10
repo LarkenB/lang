@@ -121,9 +121,7 @@ export class Parser {
 
   private _parseExprStmt(): ExprStmt {
     const expr = this._parseExpr();
-    console.log(expr);
     this._expect("semi");
-    console.log('peek: ', this._lexer.peek());
     return { type: "exprStmt", expr };
   }
 
@@ -165,6 +163,11 @@ export class Parser {
 
         this._expect("rParen");
         return { type: "callExpr", name, args };
+      }
+      case "colEq": {
+        this._lexer.next(); // Eat ':='
+        const expr = this._parseExpr();
+        return { type: 'assignExpr', name, expr };
       }
       default:
         return { type: "varExpr", name };

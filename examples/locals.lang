@@ -1,5 +1,14 @@
 func main() -> i32 {
-  a := 10;
-  b := 30;
+  a := add(35, 34);
+  b := sub(40, 20);
   ret a + b;
+}
+
+
+func add(a: i32, b: i32) -> i32 {
+  ret a + b;
+}
+
+func sub(a: i32, b: i32) -> i32 {
+  ret a - b;
 }

@@ -68,6 +68,11 @@ export type ColonToken = {
   type: "colon";
 };
 
+export type ColEqToken = {
+  lexeme: ":=";
+  type: "colEq";
+};
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -82,7 +87,9 @@ export type Token =
   | OpToken
   | ArrowToken
   | CommaToken
-  | ColonToken;
+  | ColonToken
+  | ColEqToken;
+
 
 export type TokenType = ExtractTypes<Token>;
 

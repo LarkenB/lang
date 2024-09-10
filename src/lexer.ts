@@ -53,8 +53,14 @@ export class Lexer implements ILexer {
         return { type: "semi", lexeme: c };
       case ",":
         return { type: "comma", lexeme: c };
-      case ":":
+      case ":": {
+        if (this._reader.peek() === '=') {
+          this._reader.next(); // Eat '='
+          return { type: "colEq", lexeme: ':=' };  
+        }
         return { type: "colon", lexeme: c };
+      }
+        
     }
 
     // Operators

@@ -206,6 +206,11 @@ export class TypeChecker {
 
         return rhsType;
       }
+      case "assignExpr": {
+        const varType = this._checkExpr(expr.expr);
+        this._symbolTable.addSymbol(expr.name.lexeme, varType);
+        return varType;
+      }
     }
   }
 
