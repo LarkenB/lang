@@ -2,6 +2,7 @@ import {
   Expr,
   ExprStmt,
   ExternDecl,
+  ExternFunc,
   FuncDecl,
   IntExpr,
   Param,
@@ -77,6 +78,23 @@ export class Parser {
   // TODO: create top level type and switch between extern decl and funcs instead of checking in parseProgram
   private _parseExternDecl(): ExternDecl {
     this._expect("extern");
+    const moduleName = this._expect("stringLiteral");
+    this._expect('lBrace');
+
+    const funcs: ExternFunc[] = [];
+    while (this._lexer.peek().type !== 'rBrace') {
+      funcs.push(this._parseExternFunc());
+    }
+    this._expect('rBrace');
+
+    return {
+      type: "externDecl",
+      moduleName,
+      funcs
+    };
+  }
+
+  private _parseExternFunc(): ExternFunc {
     this._expect("func");
     const name = this._expect("ident");
     const params = this._parseParams();
@@ -88,9 +106,10 @@ export class Parser {
       this._lexer.next(); // Eat '->'
       retType = this._parseType();
     }
+    this._expect('semi');
 
     return {
-      type: "externDecl",
+      type: "externFunc",
       name,
       params,
       retType,

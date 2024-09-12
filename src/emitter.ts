@@ -1,4 +1,4 @@
-import { Expr, ExternDecl, FuncDecl, Program, Stmt, Type } from "./ast";
+import { Expr, ExternDecl, ExternFunc, FuncDecl, Program, Stmt, Type } from "./ast";
 import { encodeString, signedLEB128, unsignedLEB128 } from "./encoding";
 
 // TODO: make this a little easier to work with
@@ -78,13 +78,13 @@ export class Emitter {
     funcDecls: FuncDecl[],
     externDecls: ExternDecl[]
   ): number[] {
-    const types = [...externDecls, ...funcDecls].map((decl) =>
+    const types = [...externDecls.flatMap(extern => extern.funcs), ...funcDecls].map((decl) =>
       this._getFunctionType(decl)
     );
     return createSection(Section.type, encodeVector(types));
   }
 
-  private _getFunctionType(func: FuncDecl | ExternDecl): number[] {
+  private _getFunctionType(func: FuncDecl | ExternFunc): number[] {
     const paramTypes = func.params.map((param) =>
       this._getValueType(param.paramType)
     );
@@ -111,7 +111,9 @@ export class Emitter {
   }
 
   private _emitFunctionSection(funcDecls: FuncDecl[]): number[] {
-    const functionIndices = funcDecls.map((_, index) => index + this._functionsOffset);
+    const functionIndices = funcDecls.map(
+      (_, index) => index + this._functionsOffset
+    );
     return createSection(Section.func, encodeVector(functionIndices));
   }
 
@@ -123,25 +125,30 @@ export class Emitter {
     ]);
     return createSection(
       Section.export,
-      encodeVector([[...encodeString("memory"), ExportType.mem, ...unsignedLEB128(0)], ...exports])
+      encodeVector([
+        [...encodeString("memory"), ExportType.mem, ...unsignedLEB128(0)],
+        ...exports,
+      ])
     );
   }
 
-
   private _emitMemorySection(): number[] {
     return createSection(
-      Section.memory,// index             // initial size
+      Section.memory, // index             // initial size
       encodeVector([[...unsignedLEB128(0), ...unsignedLEB128(1)]])
     );
   }
 
   private _emitImportSection(externDecls: ExternDecl[]): number[] {
-    const imports = externDecls.map((externDecl, index) => [
-      ...encodeString("wasi_snapshot_preview1"),
-      ...encodeString(externDecl.name.lexeme),
-      ExportType.func, // todo: import_index
-      index,
-    ]);
+    let index = 0;
+    const imports = externDecls.flatMap((externDecl) =>
+      externDecl.funcs.map((func) => [
+        ...encodeString(externDecl.moduleName.lexeme),
+        ...encodeString(func.name.lexeme),
+        ExportType.func, // todo: import_index
+        index++,
+      ])
+    );
     return createSection(Section.import, encodeVector(imports));
   }
 

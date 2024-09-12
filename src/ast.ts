@@ -1,4 +1,4 @@
-import { IdentToken, IntLitToken, OpToken } from "./token";
+import { IdentToken, IntLitToken, OpToken, StringLitToken } from "./token";
 
 export type Program = {
   type: "program";
@@ -16,11 +16,16 @@ export type FuncDecl = {
 
 export type ExternDecl = {
   type: "externDecl";
+  moduleName: StringLitToken;
+  funcs: ExternFunc[];
+};
+
+export type ExternFunc = {
+  type: "externFunc";
   name: IdentToken;
   params: Param[];
   retType: Type;
 };
-
 
 export type Param = {
   type: "param";

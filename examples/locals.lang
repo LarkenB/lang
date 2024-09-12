@@ -1,4 +1,6 @@
-@extern func fd_write(fd: i32, iovec: i32, len: i32, written: i32) -> i32
+extern "wasi_snapshot_preview1" {
+  func fd_write(fd: i32, iovec: i32, len: i32, written: i32) -> i32;
+}
 
 func _start() -> i32 {
   a := add(35, 34);
