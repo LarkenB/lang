@@ -1,6 +1,7 @@
 import {
   Expr,
   ExprStmt,
+  ExternDecl,
   FuncDecl,
   IntExpr,
   Param,
@@ -27,14 +28,26 @@ export class Parser {
 
   parseProgram(): Program {
     const funcDecls: FuncDecl[] = [];
+    const externDecls: ExternDecl[] = [];
+
     while (this._lexer.peek().type !== "eof") {
-      const funcDecl = this._parseFuncDecl();
-      funcDecls.push(funcDecl);
+      
+      switch(this._lexer.peek().type) {
+        case 'extern': {
+          const externDecl = this._parseExternDecl();
+          externDecls.push(externDecl);
+        }
+        default: {
+          const funcDecl = this._parseFuncDecl();
+          funcDecls.push(funcDecl);
+        }
+      }
     }
 
     return {
       type: "program",
       funcDecls,
+      externDecls
     };
   }
 
@@ -58,6 +71,29 @@ export class Parser {
       params,
       retType,
       body,
+    };
+  }
+
+  // TODO: create top level type and switch between extern decl and funcs instead of checking in parseProgram
+  private _parseExternDecl(): ExternDecl {
+    this._expect("extern");
+    this._expect("func");
+    const name = this._expect("ident");
+    const params = this._parseParams();
+    let retType: Type = {
+      type: "type",
+      name: { type: "ident", lexeme: "void" },
+    };
+    if (this._lexer.peek().type === "arrow") {
+      this._lexer.next(); // Eat '->'
+      retType = this._parseType();
+    }
+
+    return {
+      type: "externDecl",
+      name,
+      params,
+      retType,
     };
   }
 

@@ -15,6 +15,7 @@ test("parser should return Program with empty funcDecls for an empty source file
   const expected: Program = {
     type: "program",
     funcDecls: [],
+    externDecls: []
   };
 
   expect(result).toEqual(expected);

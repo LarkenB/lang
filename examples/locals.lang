@@ -1,14 +1,21 @@
-func main() -> i32 {
+@extern func fd_write(fd: i32, iovec: i32, len: i32, written: i32) -> i32
+
+func _start() -> i32 {
   a := add(35, 34);
   b := sub(40, 20);
-  ret a + b;
+  c := 10;
+  ret square(100) + a + b + c - 99;
 }
-
 
 func add(a: i32, b: i32) -> i32 {
   ret a + b;
 }
 
 func sub(a: i32, b: i32) -> i32 {
-  ret a - b;
+  c := b;
+  ret a - c;
+}
+
+func square(a: i32) -> i32 {
+  ret a * a;
 }

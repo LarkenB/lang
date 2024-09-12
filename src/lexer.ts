@@ -53,14 +53,31 @@ export class Lexer implements ILexer {
         return { type: "semi", lexeme: c };
       case ",":
         return { type: "comma", lexeme: c };
+      case "@": {
+        c = this._reader.next(); // Eat '@'
+        if (!startsIdent(c)) throw new Error("'@' macro must be followed by an identifier // TODO: list macro options here");
+        let lexeme = c;
+        c = this._reader.peek();
+        while (c !== eof && isIdent(c)) {
+          lexeme += this._reader.next();
+          c = this._reader.peek();
+        }
+
+        // TODO: reduce verbosity needed for adding macros
+        switch (lexeme) {
+          case "extern":
+            return { type: "extern", lexeme: "@extern" };
+          default:
+            throw new Error(`invalid macro option: ${lexeme}`)
+        }
+      }
       case ":": {
-        if (this._reader.peek() === '=') {
+        if (this._reader.peek() === "=") {
           this._reader.next(); // Eat '='
-          return { type: "colEq", lexeme: ':=' };  
+          return { type: "colEq", lexeme: ":=" };
         }
         return { type: "colon", lexeme: c };
       }
-        
     }
 
     // Operators

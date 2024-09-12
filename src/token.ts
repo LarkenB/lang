@@ -73,6 +73,11 @@ export type ColEqToken = {
   type: "colEq";
 };
 
+export type ExternToken = {
+  lexeme: "@extern";
+  type: "extern";
+};
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -88,7 +93,8 @@ export type Token =
   | ArrowToken
   | CommaToken
   | ColonToken
-  | ColEqToken;
+  | ColEqToken
+  | ExternToken;
 
 
 export type TokenType = ExtractTypes<Token>;

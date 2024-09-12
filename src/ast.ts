@@ -3,6 +3,7 @@ import { IdentToken, IntLitToken, OpToken } from "./token";
 export type Program = {
   type: "program";
   funcDecls: FuncDecl[];
+  externDecls: ExternDecl[];
 };
 
 export type FuncDecl = {
@@ -12,6 +13,14 @@ export type FuncDecl = {
   retType: Type;
   body: Stmt[];
 };
+
+export type ExternDecl = {
+  type: "externDecl";
+  name: IdentToken;
+  params: Param[];
+  retType: Type;
+};
+
 
 export type Param = {
   type: "param";

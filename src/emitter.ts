@@ -1,4 +1,4 @@
-import { Expr, FuncDecl, Program, Stmt, Type } from "./ast";
+import { Expr, ExternDecl, FuncDecl, Program, Stmt, Type } from "./ast";
 import { encodeString, signedLEB128, unsignedLEB128 } from "./encoding";
 
 // TODO: make this a little easier to work with
@@ -12,21 +12,30 @@ export class Emitter {
   private _functionNames: string[] = [];
   private _symbolTable: SymbolTable = {};
   private _currentFunction: string | null = null;
+  private _functionsOffset: number = 0;
 
   emitProgram(program: Program): Uint8Array {
+    this._functionsOffset = program.externDecls.length;
     this._functionNames = program.funcDecls.map((func) => func.name.lexeme);
     this._buildSymbolTable(program.funcDecls);
 
-    const typeSection = this._emitTypeSection(program.funcDecls);
+    const typeSection = this._emitTypeSection(
+      program.funcDecls,
+      program.externDecls
+    );
     const functionSection = this._emitFunctionSection(program.funcDecls);
+    const memorySection = this._emitMemorySection();
     const exportSection = this._emitExportSection(program.funcDecls);
+    const importSection = this._emitImportSection(program.externDecls);
     const codeSection = this._emitCodeSection(program.funcDecls);
 
     const binary = [
       ...magicModuleHeader,
       ...moduleVersion,
       ...typeSection,
+      ...importSection,
       ...functionSection,
+      ...memorySection,
       ...exportSection,
       ...codeSection,
     ];
@@ -42,12 +51,14 @@ export class Emitter {
         this._symbolTable[func.name.lexeme][param.name.lexeme] = index;
         index++;
       });
-      func.body.map(stmt => stmt.expr).forEach(expr => {
-        if (expr?.type === 'assignExpr') {
-          this._symbolTable[func.name.lexeme][expr.name.lexeme] = index;
-          index++;
-        }
-      })
+      func.body
+        .map((stmt) => stmt.expr)
+        .forEach((expr) => {
+          if (expr?.type === "assignExpr") {
+            this._symbolTable[func.name.lexeme][expr.name.lexeme] = index;
+            index++;
+          }
+        });
     }
   }
 
@@ -63,12 +74,17 @@ export class Emitter {
     return encodeVector([...encodeVector(locals), ...code]);
   }
 
-  private _emitTypeSection(funcDecls: FuncDecl[]): number[] {
-    const types = funcDecls.map((func) => this._getFunctionType(func));
+  private _emitTypeSection(
+    funcDecls: FuncDecl[],
+    externDecls: ExternDecl[]
+  ): number[] {
+    const types = [...externDecls, ...funcDecls].map((decl) =>
+      this._getFunctionType(decl)
+    );
     return createSection(Section.type, encodeVector(types));
   }
 
-  private _getFunctionType(func: FuncDecl): number[] {
+  private _getFunctionType(func: FuncDecl | ExternDecl): number[] {
     const paramTypes = func.params.map((param) =>
       this._getValueType(param.paramType)
     );
@@ -95,7 +111,7 @@ export class Emitter {
   }
 
   private _emitFunctionSection(funcDecls: FuncDecl[]): number[] {
-    const functionIndices = funcDecls.map((_, index) => index);
+    const functionIndices = funcDecls.map((_, index) => index + this._functionsOffset);
     return createSection(Section.func, encodeVector(functionIndices));
   }
 
@@ -103,9 +119,30 @@ export class Emitter {
     const exports = funcDecls.map((func, index) => [
       ...encodeString(func.name.lexeme),
       ExportType.func,
-      ...unsignedLEB128(index),
+      ...unsignedLEB128(index + this._functionsOffset),
     ]);
-    return createSection(Section.export, encodeVector(exports));
+    return createSection(
+      Section.export,
+      encodeVector([[...encodeString("memory"), ExportType.mem, ...unsignedLEB128(0)], ...exports])
+    );
+  }
+
+
+  private _emitMemorySection(): number[] {
+    return createSection(
+      Section.memory,// index             // initial size
+      encodeVector([[...unsignedLEB128(0), ...unsignedLEB128(1)]])
+    );
+  }
+
+  private _emitImportSection(externDecls: ExternDecl[]): number[] {
+    const imports = externDecls.map((externDecl, index) => [
+      ...encodeString("wasi_snapshot_preview1"),
+      ...encodeString(externDecl.name.lexeme),
+      ExportType.func, // todo: import_index
+      index,
+    ]);
+    return createSection(Section.import, encodeVector(imports));
   }
 
   private _emitCodeSection(funcDecls: FuncDecl[]): number[] {
@@ -114,13 +151,15 @@ export class Emitter {
   }
 
   private _emitFuncBody(body: Stmt[]): number[] {
-    return flatten(body.map((stmt) => this._emitStmt(stmt)));
+    return [...flatten(body.map((stmt) => this._emitStmt(stmt))), Opcodes.end];
   }
 
   private _emitStmt(stmt: Stmt): number[] {
     switch (stmt.type) {
       case "retStmt":
-        return stmt.expr ? [...this._emitExpr(stmt.expr), Opcodes.end] : [Opcodes.end];
+        return stmt.expr
+          ? [...this._emitExpr(stmt.expr), Opcodes.return]
+          : [Opcodes.return];
       case "exprStmt":
         return this._emitExpr(stmt.expr);
       default:
@@ -178,7 +217,7 @@ export class Emitter {
     if (index === -1) {
       throw new Error(`Unknown function: ${funcName}`);
     }
-    return index;
+    return index + this._functionsOffset;
   }
 }
 
@@ -241,6 +280,7 @@ enum Opcodes {
   f32_mul = 0x94,
   f32_div = 0x95,
   i32_trunc_f32_s = 0xa8,
+  return = 0xf,
 }
 
 const binaryOpcode = {
