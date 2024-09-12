@@ -41,5 +41,31 @@ test("lexer should return eof for empty source file", () => {
   const reader = new Reader(source);
   const lexer = new Lexer(reader);
 
-  expect(lexer.next().type).toEqual('eof');
+  expect(lexer.next().type).toEqual("eof");
+});
+
+test("lexer simple string literal example", () => {
+  const source = `"jdajdajdalkdlkawlkjdlkwkajkwajkldlkalkjwakdjj2oijoij3oir1h1 3hr9u bkjbfakjbfaknkwajb"`;
+
+  const reader = new Reader(source);
+  const lexer = new Lexer(reader);
+
+  const result: TokenType[] = [];
+  while (lexer.peek().type !== "eof") {
+    result.push(lexer.next().type);
+  }
+
+  const expected: TokenType[] = ["stringLiteral"];
+
+  expect(result).toEqual(expected);
+});
+
+test("lexer should fail for string literal with no closing quote", () => {
+  const source = `"jdajdajdalkdlkawlkjdlkwkajkwajkldlkalkjwakdjj2oijoij3oir1h1 3hr9u bkjbfakjbfaknkwajb`;
+
+  const reader = new Reader(source);
+  const lexer = new Lexer(reader);
+
+
+  expect(lexer.next).toThrow();
 });

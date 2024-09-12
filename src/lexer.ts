@@ -53,30 +53,26 @@ export class Lexer implements ILexer {
         return { type: "semi", lexeme: c };
       case ",":
         return { type: "comma", lexeme: c };
-      case "@": {
-        c = this._reader.next(); // Eat '@'
-        if (!startsIdent(c)) throw new Error("'@' macro must be followed by an identifier // TODO: list macro options here");
-        let lexeme = c;
-        c = this._reader.peek();
-        while (c !== eof && isIdent(c)) {
-          lexeme += this._reader.next();
-          c = this._reader.peek();
-        }
-
-        // TODO: reduce verbosity needed for adding macros
-        switch (lexeme) {
-          case "extern":
-            return { type: "extern", lexeme: "@extern" };
-          default:
-            throw new Error(`invalid macro option: ${lexeme}`)
-        }
-      }
       case ":": {
         if (this._reader.peek() === "=") {
           this._reader.next(); // Eat '='
           return { type: "colEq", lexeme: ":=" };
         }
         return { type: "colon", lexeme: c };
+      }
+      case '"': {
+        let lexeme = "";
+        c = this._reader.peek();
+        while (c !== eof && c !== '"') {
+          lexeme += this._reader.next();
+          c = this._reader.peek();
+        }
+
+        if (this._reader.next() === eof) {
+          throw new Error('no closing " for string literal');
+        }
+
+        return { type: "stringLiteral", lexeme };
       }
     }
 
@@ -105,7 +101,7 @@ export class Lexer implements ILexer {
       }
     }
 
-    // Keywords and Identifiers
+    // Keywords & Identifiers
     if (startsIdent(c)) {
       let lexeme = c;
       c = this._reader.peek();
@@ -120,6 +116,8 @@ export class Lexer implements ILexer {
           return { type: "func", lexeme };
         case "ret":
           return { type: "ret", lexeme };
+        case "extern":
+          return { type: "extern", lexeme };
         default:
           return { type: "ident", lexeme };
       }

@@ -74,8 +74,13 @@ export type ColEqToken = {
 };
 
 export type ExternToken = {
-  lexeme: "@extern";
+  lexeme: "extern";
   type: "extern";
+};
+
+export type StringLitToken = {
+  lexeme: string;
+  type: "stringLiteral";
 };
 
 export type Token =
@@ -94,8 +99,8 @@ export type Token =
   | CommaToken
   | ColonToken
   | ColEqToken
-  | ExternToken;
-
+  | ExternToken
+  | StringLitToken;
 
 export type TokenType = ExtractTypes<Token>;
 
