@@ -15,7 +15,7 @@ export class Emitter {
   private _functionsOffset: number = 0;
 
   emitProgram(program: Program): Uint8Array {
-    this._functionsOffset = program.externDecls.length;
+    this._functionsOffset = program.externDecls.flatMap(extern => extern.funcs).length;
     this._functionNames = program.funcDecls.map((func) => func.name.lexeme);
     this._buildSymbolTable(program.funcDecls);
 

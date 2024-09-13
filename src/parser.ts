@@ -32,15 +32,16 @@ export class Parser {
     const externDecls: ExternDecl[] = [];
 
     while (this._lexer.peek().type !== "eof") {
-      
       switch(this._lexer.peek().type) {
         case 'extern': {
           const externDecl = this._parseExternDecl();
           externDecls.push(externDecl);
+          break;
         }
         default: {
           const funcDecl = this._parseFuncDecl();
           funcDecls.push(funcDecl);
+          break;
         }
       }
     }
