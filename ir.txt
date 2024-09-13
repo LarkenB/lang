@@ -25,7 +25,12 @@ lang    wasm
 # Extern Functions
 
 ## V2
-- Arrays
+# Control Flow
+- if
+- else
+- while/loop
+
+# Arrays
 
 
 ------------------------------
