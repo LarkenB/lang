@@ -4,11 +4,14 @@ import * as Ast from "./ast";
 class SymbolTableFrame {
   readonly parent: SymbolTableFrame | null;
   readonly name: string | null;
-  
+
   private readonly _symbols = new Map<string, Type>();
   private readonly _functions = new Map<string, FuncType>();
 
-  constructor(parent: SymbolTableFrame | null = null, name: string | null = null) {
+  constructor(
+    parent: SymbolTableFrame | null = null,
+    name: string | null = null
+  ) {
     this.parent = parent;
     this.name = name;
   }
@@ -43,9 +46,10 @@ class SymbolTable {
   private readonly _types = new Map<string, Type>();
 
   constructor() {
-    this._types.set("i32", "i32");
-    this._types.set("f32", "f32");
-    this._types.set("void", "void");
+    this._types.set("i32", { type: "i32" });
+    this._types.set("u8", { type: "u8" });
+    this._types.set("u32", { type: "u32" });
+    this._types.set("void", { type: "void" });
   }
 
   pushFrame(funcName: string) {
@@ -86,12 +90,25 @@ class SymbolTable {
   }
 
   getCurrentFrameName(): string {
-    assert(this._frame.name !== null, "Internal error, getCurrentFrameName was called on the top-level symbol table frame");
+    assert(
+      this._frame.name !== null,
+      "Internal error, getCurrentFrameName was called on the top-level symbol table frame"
+    );
     return this._frame.name;
   }
 }
 
-type Type = "i32" | "f32" | "void";
+type Type = Void | I32 | U8 | U32 | Pointer;
+
+type I32 = { type: "i32" };
+type U8 = { type: "u8" };
+type U32 = { type: "u32" };
+type Void = { type: "void" };
+
+type Pointer = {
+  to: Type;
+  type: "pointer";
+};
 
 type FuncType = {
   retType: Type;
@@ -138,13 +155,17 @@ export class TypeChecker {
 
         // Check for void return type
         if (stmt.expr === null) {
-          if (funcType.retType === 'void') return 'void';
-          throw new Error(`No return value was provided for function: ${funcName} with return type: ${funcType.retType}`);
+          if (funcType.retType.type === "void") return { type: "void" };
+          throw new Error(
+            `No return value was provided for function: ${funcName} with return type: ${funcType.retType}`
+          );
         }
 
         const exprType = this._checkExpr(stmt.expr);
         if (exprType !== funcType.retType) {
-          throw new Error(`Return statement in function: ${funcName} has incorrect type, expected: ${funcType.retType}, got: ${exprType}`);
+          throw new Error(
+            `Return statement in function: ${funcName} has incorrect type, expected: ${funcType.retType}, got: ${exprType}`
+          );
         }
         return exprType;
       }
@@ -157,11 +178,14 @@ export class TypeChecker {
   private _checkExpr(expr: Ast.Expr): Type {
     switch (expr.type) {
       case "intExpr": {
-        return "i32";
+        return { type: "i32" };
+      }
+      case "stringExpr": {
+        return { to: { type: "u8" }, type: "pointer" };
       }
       case "varExpr": {
         const varType = this._symbolTable.getSymbol(expr.name.lexeme);
-        
+
         if (!varType) {
           throw new Error(`Unknown variable with name: ${expr.name.lexeme}`);
         }
@@ -215,8 +239,16 @@ export class TypeChecker {
   }
 
   private _checkType(typeAst: Ast.Type): Type {
-    const type = this._symbolTable.getType(typeAst.name.lexeme);
-    assert(type, `Error: undefined type ${typeAst.name.lexeme}`);
-    return type;
+    switch (typeAst.type) {
+      case 'named': {
+        const type = this._symbolTable.getType(typeAst.name.lexeme);
+        assert(type, `Error: undefined type ${typeAst.name.lexeme}`);
+        return type;
+      }
+      case 'pointer': {
+        return {type: 'pointer', to: this._checkType(typeAst.to)}
+      }
+    }
+    
   }
 }

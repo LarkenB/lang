@@ -80,7 +80,7 @@ export type ExternToken = {
 
 export type StringLitToken = {
   lexeme: string;
-  type: "stringLiteral";
+  type: "stringLit";
 };
 
 export type Token =

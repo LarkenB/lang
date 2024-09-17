@@ -33,8 +33,15 @@ export type Param = {
   paramType: Type;
 };
 
-export type Type = {
-  type: "type";
+export type Type = PointerType | NamedType;
+
+export type PointerType = {
+  type: "pointer";
+  to: Type;
+}
+
+export type NamedType = {
+  type: "named";
   name: IdentToken;
 };
 
@@ -50,7 +57,7 @@ export type ExprStmt = {
   expr: Expr;
 };
 
-export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr | AssignExpr;
+export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr | AssignExpr | StringExpr;
 
 export type CallExpr = {
   type: "callExpr";
@@ -79,4 +86,9 @@ export type BinaryExpr = {
 export type IntExpr = {
   type: "intExpr";
   value: IntLitToken;
+};
+
+export type StringExpr = {
+  type: "stringExpr";
+  value: StringLitToken;
 };

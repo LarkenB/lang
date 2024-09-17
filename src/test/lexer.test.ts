@@ -76,7 +76,7 @@ test("lexer simple main function example", () => {
 
   const expected: TokenType[] = [
     "extern",
-    "stringLiteral",
+    "stringLit",
     "lBrace",
     "func",
     "ident",
@@ -102,7 +102,7 @@ test("lexer simple main function example", () => {
     "semi",
     "rBrace",
     "extern",
-    "stringLiteral",
+    "stringLit",
     "lBrace",
     "func",
     "ident",
@@ -244,7 +244,7 @@ test("lexer simple string literal example", () => {
     result.push(lexer.next().type);
   }
 
-  const expected: TokenType[] = ["stringLiteral"];
+  const expected: TokenType[] = ["stringLit"];
 
   expect(result).toEqual(expected);
 });

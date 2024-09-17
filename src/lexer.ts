@@ -72,7 +72,7 @@ export class Lexer implements ILexer {
           throw new Error('no closing " for string literal');
         }
 
-        return { type: "stringLiteral", lexeme };
+        return { type: "stringLit", lexeme };
       }
     }
 

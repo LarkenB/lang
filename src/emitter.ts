@@ -88,10 +88,12 @@ export class Emitter {
     const paramTypes = func.params.map((param) =>
       this._getValueType(param.paramType)
     );
+
     const returnTypes =
-      func.retType.name.lexeme === "void"
+      func.retType.type === 'named' && func.retType.name.lexeme === "void"
         ? []
         : [this._getValueType(func.retType)];
+
     return [
       functionType,
       ...encodeVector(paramTypes),
@@ -100,6 +102,8 @@ export class Emitter {
   }
 
   private _getValueType(type: Type): number {
+    if (type.type === 'pointer') return Valtype.i32;
+
     switch (type.name.lexeme) {
       case "i32":
         return Valtype.i32;
@@ -202,6 +206,9 @@ export class Emitter {
         const localIndex = this._getLocalIndex(expr.name.lexeme);
         const value = this._emitExpr(expr.expr);
         return [...value, Opcodes.set_local, ...unsignedLEB128(localIndex)];
+      }
+      case "stringExpr": {
+        return []; // TODO: add support for string literals
       }
     }
   }

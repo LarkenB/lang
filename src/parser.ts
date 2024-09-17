@@ -5,10 +5,13 @@ import {
   ExternFunc,
   FuncDecl,
   IntExpr,
+  NamedType,
   Param,
+  PointerType,
   Program,
   RetStmt,
   Stmt,
+  StringExpr,
   Type,
 } from "./ast";
 import { ILexer } from "./interfaces";
@@ -32,8 +35,8 @@ export class Parser {
     const externDecls: ExternDecl[] = [];
 
     while (this._lexer.peek().type !== "eof") {
-      switch(this._lexer.peek().type) {
-        case 'extern': {
+      switch (this._lexer.peek().type) {
+        case "extern": {
           const externDecl = this._parseExternDecl();
           externDecls.push(externDecl);
           break;
@@ -49,7 +52,7 @@ export class Parser {
     return {
       type: "program",
       funcDecls,
-      externDecls
+      externDecls,
     };
   }
 
@@ -58,7 +61,7 @@ export class Parser {
     const name = this._expect("ident");
     const params = this._parseParams();
     let retType: Type = {
-      type: "type",
+      type: "named",
       name: { type: "ident", lexeme: "void" },
     };
     if (this._lexer.peek().type === "arrow") {
@@ -79,19 +82,19 @@ export class Parser {
   // TODO: create top level type and switch between extern decl and funcs instead of checking in parseProgram
   private _parseExternDecl(): ExternDecl {
     this._expect("extern");
-    const moduleName = this._expect("stringLiteral");
-    this._expect('lBrace');
+    const moduleName = this._expect("stringLit");
+    this._expect("lBrace");
 
     const funcs: ExternFunc[] = [];
-    while (this._lexer.peek().type !== 'rBrace') {
+    while (this._lexer.peek().type !== "rBrace") {
       funcs.push(this._parseExternFunc());
     }
-    this._expect('rBrace');
+    this._expect("rBrace");
 
     return {
       type: "externDecl",
       moduleName,
-      funcs
+      funcs,
     };
   }
 
@@ -100,14 +103,14 @@ export class Parser {
     const name = this._expect("ident");
     const params = this._parseParams();
     let retType: Type = {
-      type: "type",
+      type: "named",
       name: { type: "ident", lexeme: "void" },
     };
     if (this._lexer.peek().type === "arrow") {
       this._lexer.next(); // Eat '->'
       retType = this._parseType();
     }
-    this._expect('semi');
+    this._expect("semi");
 
     return {
       type: "externFunc",
@@ -143,7 +146,24 @@ export class Parser {
   }
 
   private _parseType(): Type {
-    return { type: "type", name: this._expect("ident") };
+    const possibleStar = this._lexer.peek();
+    if (possibleStar.type === "op" && possibleStar.lexeme === "*") {
+      return this._parsePointerType();
+    }
+
+    return this._parseNamedType();
+  }
+
+  private _parseNamedType(): NamedType {
+    return { type: "named", name: this._expect("ident") };
+  }
+
+  private _parsePointerType(): PointerType {
+    if (this._expect("op").lexeme !== "*") {
+      throw new Error("pointer type must be followed by a named type");
+    }
+
+    return { type: "pointer", to: this._parseType() };
   }
 
   private _parseStmtBlock(): Stmt[] {
@@ -168,7 +188,7 @@ export class Parser {
   private _parseRetStmt(): RetStmt {
     this._expect("ret");
     let expr = null;
-    if (this._lexer.peek().type !== 'semi') {
+    if (this._lexer.peek().type !== "semi") {
       expr = this._parseExpr();
     }
     this._expect("semi");
@@ -194,6 +214,8 @@ export class Parser {
         return this._parseIntLitExpr();
       case "lParen":
         return this._parseParenExpr();
+      case "stringLit":
+        return this._parseStringLitExpr();
       default:
         throw new Error("TODO: " + this._lexer.peek().type);
     }
@@ -223,7 +245,7 @@ export class Parser {
       case "colEq": {
         this._lexer.next(); // Eat ':='
         const expr = this._parseExpr();
-        return { type: 'assignExpr', name, expr };
+        return { type: "assignExpr", name, expr };
       }
       default:
         return { type: "varExpr", name };
@@ -233,6 +255,11 @@ export class Parser {
   private _parseIntLitExpr(): IntExpr {
     const value = this._expect("intLit");
     return { type: "intExpr", value };
+  }
+
+  private _parseStringLitExpr(): StringExpr {
+    const value = this._expect("stringLit");
+    return { type: "stringExpr", value };
   }
 
   private _parseParenExpr(): Expr {
