@@ -83,6 +83,11 @@ export type StringLitToken = {
   type: "stringLit";
 };
 
+export type TypeToken = {
+  lexeme: "type";
+  type: 'type';
+}
+
 export type Token =
   | EOFToken
   | IdentToken
@@ -100,7 +105,8 @@ export type Token =
   | ColonToken
   | ColEqToken
   | ExternToken
-  | StringLitToken;
+  | StringLitToken
+  | TypeToken;
 
 export type TokenType = ExtractTypes<Token>;
 

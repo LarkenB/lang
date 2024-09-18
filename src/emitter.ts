@@ -207,6 +207,9 @@ export class Emitter {
         const value = this._emitExpr(expr.expr);
         return [...value, Opcodes.set_local, ...unsignedLEB128(localIndex)];
       }
+      case "typeInitExpr": {
+        throw new Error('TODO: implement struct init code gen');
+      }
       case "stringExpr": {
         return []; // TODO: add support for string literals
       }

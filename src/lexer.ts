@@ -118,6 +118,8 @@ export class Lexer implements ILexer {
           return { type: "ret", lexeme };
         case "extern":
           return { type: "extern", lexeme };
+        case "type":
+          return {type: "type", lexeme};
         default:
           return { type: "ident", lexeme };
       }

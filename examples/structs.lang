@@ -1,0 +1,13 @@
+type Foo {
+    a: i32;
+    b: i32;
+}
+
+func main() -> i32 {
+    x := {
+        a: 35,
+        b: 34
+    };
+
+    ret 0;
+}

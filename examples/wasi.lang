@@ -3,7 +3,13 @@ extern "wasi_snapshot_preview1" {
   func fd_close(fd: i32) -> i32;
 }
 
+func foo(x: i32) -> i32 {
+  ret x;
+}
+
 func _start() -> i32 {
+    x := y := 3;
+    foo(z := 3);
     msg := "Hello, World!";
     ret 0;
 }

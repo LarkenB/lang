@@ -13,6 +13,10 @@ import {
   Stmt,
   StringExpr,
   Type,
+  TypeDecl,
+  TypeInitExpr,
+  TypeProp,
+  TypePropInit,
 } from "./ast";
 import { ILexer } from "./interfaces";
 import { Token, TokenType } from "./token";
@@ -33,12 +37,19 @@ export class Parser {
   parseProgram(): Program {
     const funcDecls: FuncDecl[] = [];
     const externDecls: ExternDecl[] = [];
+    const typeDecls: TypeDecl[] = [];
+
 
     while (this._lexer.peek().type !== "eof") {
       switch (this._lexer.peek().type) {
         case "extern": {
           const externDecl = this._parseExternDecl();
           externDecls.push(externDecl);
+          break;
+        }
+        case "type": {
+          const typeDecl = this._parseTypeDecl();
+          typeDecls.push(typeDecl);
           break;
         }
         default: {
@@ -53,7 +64,38 @@ export class Parser {
       type: "program",
       funcDecls,
       externDecls,
+      typeDecls
     };
+  }
+
+  private _parseTypeDecl(): TypeDecl {
+    this._expect("type");
+    const name = this._expect("ident");
+    this._expect('lBrace');
+    const properties = [];
+    while (this._lexer.peek().type !== 'rBrace') {
+      properties.push(this._parseProperty());
+      this._expect('semi');
+    }
+    this._expect('rBrace');
+
+    return {
+      type: "typeDecl",
+      name,
+      properties
+    }
+  }
+
+  private _parseProperty(): TypeProp {
+    const name = this._expect('ident');
+    this._expect('colon');
+    const propType = this._parseType();
+
+    return {
+      type: "typeProperty",
+      name,
+      propType
+    }
   }
 
   private _parseFuncDecl(): FuncDecl {
@@ -216,9 +258,43 @@ export class Parser {
         return this._parseParenExpr();
       case "stringLit":
         return this._parseStringLitExpr();
+      case 'lBrace':
+        return this._parseTypeInitExpr();
       default:
         throw new Error("TODO: " + this._lexer.peek().type);
     }
+  }
+
+
+  private _parseTypeInitExpr(): TypeInitExpr {
+    this._expect("lBrace");
+    const properties: TypePropInit[] = [];
+    if (this._lexer.peek().type === "rBrace") {
+      this._lexer.next(); // Eat '}'
+      return {
+        type: 'typeInitExpr',
+        properties
+      };
+    }
+
+    const name = this._expect("ident");
+    this._expect("colon");
+    const value = this._parseExpr();
+    properties.push({ type: 'typePropInit', name, value });
+
+    while (this._lexer.peek().type === "comma") {
+      this._lexer.next(); // Eat ','
+      const name = this._expect("ident");
+      this._expect("colon");
+      const value = this._parseExpr();
+      properties.push({ type: 'typePropInit', name, value });
+    }
+
+    this._expect("rBrace");
+    return {
+      type: 'typeInitExpr',
+      properties
+    };
   }
 
   private _parseIdentExpr(): Expr {

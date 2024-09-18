@@ -7,7 +7,7 @@ import { TypeChecker } from "./checker";
 
 const main = async () => {
   try {
-    const content = readFileSync("./examples/wasi.lang", {
+    const content = readFileSync("./examples/structs.lang", {
       encoding: "utf-8",
     });
     const reader = new Reader(content);

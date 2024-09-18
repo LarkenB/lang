@@ -31,7 +31,7 @@ class SymbolTableFrame {
   addSymbol(name: string, type: Type) {
     assert(
       !this.parent?.getSymbol(name) && !this._symbols.has(name),
-      `Error: duplicate function name: ${name}`
+      `Error: duplicate variable name: ${name}`
     );
     this._symbols.set(name, type);
   }
@@ -229,6 +229,9 @@ export class TypeChecker {
         }
 
         return rhsType;
+      }
+      case "typeInitExpr": {
+        throw new Error('TODO: implement typeInitExpr checking');
       }
       case "assignExpr": {
         const varType = this._checkExpr(expr.expr);

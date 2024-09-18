@@ -4,6 +4,7 @@ export type Program = {
   type: "program";
   funcDecls: FuncDecl[];
   externDecls: ExternDecl[];
+  typeDecls: TypeDecl[];
 };
 
 export type FuncDecl = {
@@ -13,6 +14,18 @@ export type FuncDecl = {
   retType: Type;
   body: Stmt[];
 };
+
+export type TypeDecl = {
+  type: "typeDecl";
+  name: IdentToken;
+  properties: TypeProp[];
+}
+
+export type TypeProp = {
+  type: "typeProperty";
+  name: IdentToken;
+  propType: Type;
+}
 
 export type ExternDecl = {
   type: "externDecl";
@@ -57,7 +70,7 @@ export type ExprStmt = {
   expr: Expr;
 };
 
-export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr | AssignExpr | StringExpr;
+export type Expr = CallExpr | VarExpr | BinaryExpr | IntExpr | AssignExpr | StringExpr | TypeInitExpr;
 
 export type CallExpr = {
   type: "callExpr";
@@ -92,3 +105,15 @@ export type StringExpr = {
   type: "stringExpr";
   value: StringLitToken;
 };
+
+
+export type TypeInitExpr = {
+  type: "typeInitExpr";
+  properties: TypePropInit[];
+}
+
+export type TypePropInit = {
+  type: "typePropInit";
+  name: IdentToken;
+  value: Expr;
+}
